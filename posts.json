@@ -1,0 +1,23 @@
+[
+  {
+    "id": "hello-world",
+    "title": "我的第一篇博客文章",
+    "date": "2026-04-30",
+    "category": "随笔",
+    "tags": [
+      "随笔",
+      "开始"
+    ],
+    "excerpt": "这是我的第一篇博客文章，用来测试 Markdown 渲染效果。",
+    "content": "<h2>欢迎来到我的博客</h2>\n<p>这是我的<strong>第一篇博客文章</strong>。这篇文章将展示 Markdown 的各种排版能力。</p>\n<h3>代码块测试</h3>\n<pre><code class=\"language-javascript\">function greeting(name) {\n  return `你好，${name}！欢迎来到我的博客。`;\n}\nconsole.log(greeting(&#39;访客&#39;));\n</code></pre>\n<h3>引用测试</h3>\n<blockquote>\n<p>写作是最好的思考方式。\n—— 弗兰西斯·培根</p>\n</blockquote>\n<h3>列表示例</h3>\n<p>今天要完成的事情：</p>\n<ol>\n<li>写好第一篇博客</li>\n<li>配置好 GitHub Pages</li>\n<li>分享给朋友们</li>\n</ol>\n<ul>\n<li>技术</li>\n<li>生活</li>\n<li>读书</li>\n</ul>\n<h3>表格测试</h3>\n<table>\n<thead>\n<tr>\n<th>日期</th>\n<th>事件</th>\n<th>备注</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>4月30日</td>\n<td>博客上线</td>\n<td>激动</td>\n</tr>\n<tr>\n<td>5月1日</td>\n<td>写新文章</td>\n<td>期待</td>\n</tr>\n</tbody></table>\n<hr>\n<p>感谢你的阅读！这只是个开始。🎉</p>\n"
+  },
+  {
+    "id": "another-post",
+    "title": "another-post.md",
+    "date": "",
+    "category": "未分类",
+    "tags": [],
+    "excerpt": "",
+    "content": "<hr>\n<h2>title: 学习 JavaScript 的十个技巧\ndate: 2026-04-25\ncategory: 技术\ntags: [JavaScript, 教程, 前端]\nexcerpt: 分享十个实用的 JavaScript 编程技巧，帮助你写出更简洁优雅的代码。</h2>\n<h2>前言</h2>\n<p>JavaScript 是最流行的编程语言之一。以下是十个实用技巧。</p>\n<h3>1. 解构赋值</h3>\n<pre><code class=\"language-javascript\">const user = { name: &#39;张三&#39;, age: 25 };\nconst { name, age } = user;\nconsole.log(name); // 张三\n</code></pre>\n<h3>2. 模板字符串</h3>\n<pre><code class=\"language-javascript\">const name = &#39;世界&#39;;\nconsole.log(`你好，${name}！`);\n</code></pre>\n<h3>3. 箭头函数</h3>\n<pre><code class=\"language-javascript\">const add = (a, b) =&gt; a + b;\n</code></pre>\n<h3>4. 展开运算符</h3>\n<pre><code class=\"language-javascript\">const arr1 = [1, 2, 3];\nconst arr2 = [...arr1, 4, 5]; // [1, 2, 3, 4, 5]\n</code></pre>\n<h3>5. 可选链</h3>\n<pre><code class=\"language-javascript\">const city = user?.address?.city;\n</code></pre>\n<h3>6. Promise 与 async/await</h3>\n<pre><code class=\"language-javascript\">async function fetchData() {\n  const res = await fetch(&#39;/api/data&#39;);\n  return res.json();\n}\n</code></pre>\n<h3>7. 数组方法</h3>\n<ul>\n<li><code>map()</code> - 转换每个元素</li>\n<li><code>filter()</code> - 过滤元素</li>\n<li><code>reduce()</code> - 累加计算</li>\n</ul>\n<h3>8. 对象简写</h3>\n<pre><code class=\"language-javascript\">const name = &#39;李四&#39;;\nconst user = { name }; // 等同于 { name: name }\n</code></pre>\n<h3>9. 默认参数</h3>\n<pre><code class=\"language-javascript\">function greet(name = &#39;访客&#39;) {\n  return `你好，${name}`;\n}\n</code></pre>\n<h3>10. 空值合并</h3>\n<pre><code class=\"language-javascript\">const value = input ?? &#39;默认值&#39;;\n</code></pre>\n<hr>\n"
+  }
+]
