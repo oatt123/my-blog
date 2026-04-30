@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静水流深 · 个人博客</title>
+    <style>
+        :root {
+            --bg: #fff;
+            --bg-secondary: #f9fafb;
+            --text: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --accent: #5b5bd6;
+            --accent-light: #eef2ff;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 4px 6px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.06);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --max-width: 1100px;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --font-serif: 'Noto Serif SC', 'STSong', Georgia, serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased; }
+        body { font-family:var(--font-sans); background:var(--bg); color:var(--text); line-height:1.6; }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+
+        /* 导航栏 */
+        .navbar {
+            position:sticky; top:0; z-index:100;
+            background:rgba(255,255,255,0.85);
+            backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--border);
+        }
+        .navbar-inner {
+            max-width:var(--max-width); margin:0 auto;
+            padding:0 24px; height:60px;
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .nav-logo {
+            font-size:1.2rem; font-weight:700; color:var(--text);
+            cursor:pointer; display:flex; align-items:center; gap:8px;
+        }
+        .nav-logo .dot {
+            width:8px; height:8px; border-radius:50%; background:var(--accent);
+        }
+        .nav-links { display:flex; list-style:none; gap:4px; }
+        .nav-links a {
+            padding:8px 16px; border-radius:8px; cursor:pointer;
+            font-size:0.875rem; font-weight:500; color:var(--text-secondary);
+            transition:all 0.15s; text-decoration:none;
+        }
+        .nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--accent-light); }
+
+        /* 列表页 */
+        .posts-container {
+            max-width:var(--max-width); margin:0 auto;
+            padding:40px 24px 80px;
+            display:grid; grid-template-columns:1fr 300px; gap:40px; align-items:start;
+        }
+        .post-card {
+            background:var(--bg-secondary); border:1px solid var(--border);
+            border-radius:var(--radius); padding:24px; margin-bottom:12px;
+            cursor:pointer; transition:all 0.2s;
+        }
+        .post-card:hover { border-color:#c7c9ce; box-shadow:var(--shadow); }
+        .post-date { font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; }
+        .post-title { font-size:1.15rem; font-weight:700; margin-bottom:6px; }
+        .post-excerpt { font-size:0.9rem; color:var(--text-secondary); line-height:1.6; }
+        .category-badge {
+            display:inline-block; background:var(--accent-light); color:var(--accent);
+            padding:3px 10px; border-radius:6px; font-size:0.75rem; font-weight:600;
+            margin-right:8px;
+        }
+
+        .sidebar-about {
+            background:var(--bg-secondary); border:1px solid var(--border);
+            border-radius:var(--radius); padding:20px; margin-bottom:16px;
+        }
+        .sidebar-about h3 { font-size:0.95rem; margin-bottom:10px; }
+        .sidebar-about p { font-size:0.84rem; color:var(--text-secondary); }
+        .avatar {
+            width:48px; height:48px; border-radius:50%;
+            background:linear-gradient(135deg,#5b5bd6,#8b5cf6);
+            color:#fff; display:flex; align-items:center; justify-content:center;
+            font-size:1.2rem; font-weight:700; margin-bottom:10px;
+        }
+
+        /* 分类/标签列表 */
+        .sidebar-cats { list-style:none; }
+        .sidebar-cats li a {
+            display:flex; justify-content:space-between; padding:8px 12px;
+            border-radius:8px; cursor:pointer; font-size:0.84rem;
+            color:var(--text-secondary); transition:all 0.15s; text-decoration:none;
+        }
+        .sidebar-cats li a:hover { background:var(--bg); color:var(--text); }
+        .tag-cloud { display:flex; flex-wrap:wrap; gap:6px; }
+        .tag-cloud span {
+            background:var(--bg); padding:5px 11px; border-radius:8px;
+            font-size:0.78rem; color:var(--text-secondary); cursor:pointer;
+            transition:all 0.15s; border:1px solid transparent;
+        }
+        .tag-cloud span:hover { border-color:var(--border); color:var(--text); }
+
+        /* 详情页 */
+        .detail-container { max-width:780px; margin:0 auto; padding:40px 24px 80px; }
+        .back-link { font-size:0.875rem; color:var(--text-muted); cursor:pointer; margin-bottom:24px; display:inline-block; }
+        .article-title-large { font-size:2rem; font-weight:800; margin:16px 0; line-height:1.25; }
+        .article-meta { font-size:0.84rem; color:var(--text-muted); margin-bottom:32px; }
+        .article-content { font-family:var(--font-serif); font-size:1.05rem; line-height:1.85; }
+        .article-content h2 { font-family:var(--font-sans); font-size:1.4rem; margin:2em 0 0.6em; }
+        .article-content h3 { font-family:var(--font-sans); font-size:1.15rem; margin:1.6em 0 0.4em; }
+        .article-content p { margin:1.2em 0; }
+        .article-content pre { background:#1e1e2e; color:#e5e7eb; padding:18px 22px; border-radius:var(--radius-sm); overflow-x:auto; font-size:0.85rem; margin:1.5em 0; }
+        .article-content code { font-size:0.88em; background:#f3f4f6; color:#5b5bd6; padding:2px 6px; border-radius:4px; }
+        .article-content pre code { background:none; color:inherit; padding:0; }
+        .article-content blockquote { border-left:3px solid var(--accent); background:#f9fafb; padding:14px 20px; margin:1.5em 0; color:var(--text-secondary); }
+
+        .page-container { max-width:var(--max-width); margin:0 auto; padding:40px 24px 80px; }
+        .page-title { font-size:1.8rem; font-weight:800; margin-bottom:28px; }
+
+        .archive-item, .category-page-item {
+            display:flex; justify-content:space-between; padding:14px 18px;
+            background:var(--bg-secondary); border:1px solid var(--border);
+            border-radius:var(--radius-sm); cursor:pointer; margin-bottom:8px;
+            transition:all 0.15s;
+        }
+        .archive-item:hover, .category-page-item:hover { border-color:#c7c9ce; box-shadow:var(--shadow-sm); }
+
+        .site-footer { text-align:center; padding:24px; color:var(--text-muted); font-size:0.8rem; border-top:1px solid var(--border); }
+
+        @media (max-width:768px) {
+            .posts-container { grid-template-columns:1fr; padding:24px 16px 60px; }
+            .detail-container, .page-container { padding:24px 16px 60px; }
+            .article-title-large { font-size:1.5rem; }
+            .nav-links { display:none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a class="nav-logo" data-link="home"><span class="dot"></span>静水流深</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a data-link="home" class="active">文章</a></li>
+                <li><a data-link="categories">分类</a></li>
+                <li><a data-link="tags">标签</a></li>
+                <li><a data-link="archive">归档</a></li>
+                <li><a data-link="about">关于</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="app"><div style="text-align:center;padding:80px 20px;color:var(--text-muted);">加载中...</div></main>
+
+    <footer class="site-footer">© 2026 静水流深</footer>
+
+    <script>
+        (function() {
+            let articles = [];
+            let categoriesMap = new Map();
+            let tagsMap = new Map();
+
+            async function init() {
+                try {
+                    const res = await fetch('posts.json');
+                    if (!res.ok) throw new Error('posts.json 加载失败');
+                    articles = await res.json();
+                    buildMaps();
+                    render();
+                } catch (err) {
+                    document.getElementById('app').innerHTML =
+                        `<div style="text-align:center;padding:80px 20px;color:var(--text-muted);">加载失败：${err.message}</div>`;
+                }
+            }
+
+            function buildMaps() {
+                categoriesMap.clear();
+                tagsMap.clear();
+                articles.forEach(a => {
+                    categoriesMap.set(a.category, (categoriesMap.get(a.category) || 0) + 1);
+                    if (Array.isArray(a.tags)) {
+                        a.tags.forEach(t => { if (t) tagsMap.set(t, (tagsMap.get(t) || 0) + 1); });
+                    }
+                });
+            }
+
+            function getRoute() {
+                const hash = location.hash.slice(1) || '/home';
+                const [path, query] = hash.split('?');
+                const parts = path.split('/').filter(Boolean);
+                const params = new URLSearchParams(query || '');
+                return { page: parts[0] || 'home', id: parts[1] || null, params };
+            }
+
+            function navigateTo(route) { location.hash = route; }
+
+            const app = document.getElementById('app');
+
+            function renderHome() {
+                if (articles.length === 0) {
+                    app.innerHTML = `<div class="page-container"><h1 class="page-title">最新文章</h1><p style="color:var(--text-muted);">暂无文章</p></div>`;
+                    return;
+                }
+                app.innerHTML = `
+                <div class="posts-container">
+                  <div>
+                    <h1 class="page-title">最新文章</h1>
+                    ${articles.map(a => `
+                      <div class="post-card" data-id="${a.id}">
+                        <div class="post-date"><span class="category-badge">${a.category}</span> ${a.date}</div>
+                        <div class="post-title">${a.title}</div>
+                        <p class="post-excerpt">${a.excerpt || ''}</p>
+                      </div>`).join('')}
+                  </div>
+                  <aside>
+                    <div class="sidebar-about">
+                      <div class="avatar">墨</div>
+                      <h3>关于</h3>
+                      <p>热爱技术、阅读与写作。欢迎来到我的数字花园 🌿</p>
+                    </div>
+                    ${categoriesMap.size > 0 ? `
+                    <div class="sidebar-about">
+                      <h3>分类</h3>
+                      <ul class="sidebar-cats">
+                        ${[...categoriesMap].map(([k,v]) => `<li><a data-link="categories" data-category="${k}">${k} <span style="color:var(--text-muted);">${v}</span></a></li>`).join('')}
+                      </ul>
+                    </div>` : ''}
+                    ${tagsMap.size > 0 ? `
+                    <div class="sidebar-about">
+                      <h3>标签</h3>
+                      <div class="tag-cloud">
+                        ${[...tagsMap].map(([k]) => `<span data-link="tags" data-tag="${k}">${k}</span>`).join('')}
+                      </div>
+                    </div>` : ''}
+                  </aside>
+                </div>`;
+            }
+
+            function renderDetail(id) {
+                const article = articles.find(a => a.id === id);
+                if (!article) { app.innerHTML = `<div class="page-container"><p>文章未找到</p><a data-link="home">← 返回</a></div>`; return; }
+                app.innerHTML = `
+                <div class="detail-container">
+                  <a class="back-link" data-link="home">← 返回</a>
+                  <span class="category-badge">${article.category}</span>
+                  <h1 class="article-title-large">${article.title}</h1>
+                  <div class="article-meta">${article.date}</div>
+                  <div class="article-content">${article.content}</div>
+                  ${article.tags && article.tags.length ? `<div style="margin-top:32px;display:flex;gap:6px;flex-wrap:wrap;">${article.tags.map(t => `<span class="tag" data-link="tags" data-tag="${t}" style="cursor:pointer;background:var(--bg-secondary);padding:5px 11px;border-radius:8px;font-size:0.8rem;">${t}</span>`).join('')}</div>` : ''}
+                </div>`;
+            }
+
+            function renderCategories() {
+                const params = getRoute().params;
+                const filter = params.get('filter');
+                const cats = filter ? [...categoriesMap].filter(([k]) => k === filter) : [...categoriesMap];
+                app.innerHTML = `
+                <div class="page-container">
+                  <h1 class="page-title">${filter ? `分类：${filter}` : '文章分类'}</h1>
+                  ${cats.map(([k,v]) => `<div class="category-page-item" data-category="${k}"><span>${k}</span><span style="color:var(--text-muted);">${v} 篇</span></div>`).join('')}
+                  ${filter ? `<p style="margin-top:16px;"><a data-link="categories">← 全部分类</a></p>` : ''}
+                </div>`;
+            }
+
+            function renderTags() {
+                const params = getRoute().params;
+                const filter = params.get('filter');
+                const tags = filter ? [...tagsMap].filter(([k]) => k === filter) : [...tagsMap];
+                app.innerHTML = `
+                <div class="page-container">
+                  <h1 class="page-title">${filter ? `标签：${filter}` : '标签'}</h1>
+                  <div class="tag-cloud">${tags.map(([k]) => `<span data-link="tags" data-tag="${k}" style="font-size:1rem;padding:8px 16px;">${k}</span>`).join('')}</div>
+                  ${filter ? `<p style="margin-top:16px;"><a data-link="tags">← 全部标签</a></p>` : ''}
+                </div>`;
+            }
+
+            function renderArchive() {
+                const grouped = {};
+                articles.forEach(a => {
+                    const ym = a.date?.substring(0,7) || '未知';
+                    if (!grouped[ym]) grouped[ym] = [];
+                    grouped[ym].push(a);
+                });
+                const sorted = Object.keys(grouped).sort().reverse();
+                app.innerHTML = `
+                <div class="page-container">
+                  <h1 class="page-title">归档</h1>
+                  ${sorted.map(ym => `
+                    <div style="margin-bottom:24px;">
+                      <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:10px;">${ym}</h3>
+                      ${grouped[ym].map(a => `<div class="archive-item" data-id="${a.id}"><span>${a.title}</span><span style="color:var(--text-muted);">${a.date}</span></div>`).join('')}
+                    </div>`).join('')}
+                </div>`;
+            }
+
+            function renderAbout() {
+                app.innerHTML = `
+                <div class="page-container" style="text-align:center;">
+                  <div class="avatar" style="margin:0 auto 16px;width:64px;height:64px;font-size:1.5rem;">墨</div>
+                  <h1 class="page-title">关于</h1>
+                  <p style="color:var(--text-secondary);max-width:500px;margin:0 auto;">热爱技术、阅读与写作。这里是我的数字花园。</p>
+                </div>`;
+            }
+
+            function render() {
+                const { page, id } = getRoute();
+                document.querySelectorAll('#navLinks a').forEach(a => a.classList.remove('active'));
+                const nav = document.querySelector(`#navLinks [data-link="${page}"]`);
+                if (nav) nav.classList.add('active');
+                switch (page) {
+                    case 'home': renderHome(); break;
+                    case 'detail': renderDetail(id); break;
+                    case 'categories': renderCategories(); break;
+                    case 'tags': renderTags(); break;
+                    case 'archive': renderArchive(); break;
+                    case 'about': renderAbout(); break;
+                    default: renderHome();
+                }
+                window.scrollTo({ top: 0 });
+            }
+
+            window.addEventListener('hashchange', render);
+            window.addEventListener('load', init);
+
+            document.addEventListener('click', e => {
+                const link = e.target.closest('[data-link]');
+                if (link) {
+                    e.preventDefault();
+                    const p = link.dataset.link;
+                    const cat = link.dataset.category;
+                    const tag = link.dataset.tag;
+                    if (cat) navigateTo(`/categories?filter=${encodeURIComponent(cat)}`);
+                    else if (tag) navigateTo(`/tags?filter=${encodeURIComponent(tag)}`);
+                    else navigateTo(`/${p}`);
+                    return;
+                }
+                const card = e.target.closest('.post-card');
+                if (card && card.dataset.id) { navigateTo(`/detail/${card.dataset.id}`); return; }
+                const ai = e.target.closest('.archive-item');
+                if (ai && ai.dataset.id) { navigateTo(`/detail/${ai.dataset.id}`); return; }
+                const ci = e.target.closest('.category-page-item');
+                if (ci && ci.dataset.category) { navigateTo(`/categories?filter=${encodeURIComponent(ci.dataset.category)}`); return; }
+            });
+        })();
+    </script>
+</body>
+</html>
