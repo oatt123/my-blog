@@ -1,5 +1,5 @@
 ---
-title: FLUX.2 人物一致性终极指南：从原理到实践的完全攻略
+title: FLUX.2 人物一致性概述
 date: 2026-04-30
 category: AI-ComfyUI
 tags: [AI,ComfyUI,LoRA]
