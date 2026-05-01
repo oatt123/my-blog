@@ -1,4 +1,3 @@
-
 ---
 title: 学习 JavaScript 的十个技巧
 date: 2026-04-25
