@@ -1,5 +1,18 @@
 [
   {
+    "id": "0501-comfyui",
+    "title": "如何保证人物一致性",
+    "date": "2026-04-30",
+    "category": "AI-ComfyUI",
+    "tags": [
+      "AI",
+      "ComfyUI",
+      "LoRA"
+    ],
+    "excerpt": "在使用模型生成图片或者视频的时候，需要底模，但是底模生成的图片，通常是不能保证人物一致性的。我们可以通过训练一个 LoRA 来保证人物的一致性。",
+    "content": "<p>这是一份博客草稿，我帮你把对话历史里的技术要点提炼整理了出来，结构清晰，适合直接发布或稍作修改。</p>\n<hr>\n<h1>FLUX.2 人物一致性终极指南：从原理到实践的完全攻略</h1>\n<h2>前言</h2>\n<p>在用 FLUX.2 进行 AI 绘图时，人物一致性问题始终困扰着不少创作者。本文从底层原理出发，系统讲解 LoRA 为何有效，如何在 FLUX.2 上训练出高保真的人物模型，以及当下最优的替代方案。</p>\n<hr>\n<h2>一、LoRA 是什么？为什么几十MB就能驾驭几十GB的大模型</h2>\n<p><strong>LoRA（Low-Rank Adaptation，低秩适配）</strong> 是大模型领域最主流的轻量级微调技术。一句话概括：<strong>它是给大模型“挂插件”的能力。</strong></p>\n<h3>1.1 核心原理：矩阵分解</h3>\n<ul>\n<li>大模型的权重矩阵非常巨大（如 4096×4096），传统微调需要更新全部参数。</li>\n<li>LoRA 冻结原矩阵 <code>W</code> 不动，旁路并联两个极小矩阵 <code>A（r×k）</code> 和 <code>B（d×r）</code>（<code>r</code> 为“秩”，通常取 4-32）。</li>\n<li>最终权重变为 <code>W&#39; = W + B×A</code>，只训练 A、B，参数量压缩成百上千倍。</li>\n</ul>\n<h3>1.2 直观理解：给画家戴“滤镜眼镜”</h3>\n<ul>\n<li>原模型 = 全能画师，LoRA = 任务专属的“滤镜眼镜”。</li>\n<li>戴上它，画师看到的、画出的自然都是水墨风、梵高风、或者某个特定的人。</li>\n<li>训练 LoRA 就是打磨这副极轻的“镜片”（几 MB 到几十 MB），换风格只需换眼镜，完全不触动原画师本身。</li>\n</ul>\n<h3>1.3 为什么 LoRA 能改变输出，却无法“无中生有”？</h3>\n<ul>\n<li><strong>能改变输出</strong>：因为每层并联的 <code>B×A</code> 对不同输入会产生不同的“偏移信号”，在所有层累积后足以彻底扭转生成风格或人物特征。</li>\n<li><strong>不能引入新知识</strong>：如果基底模型从未见过“马斯克的脸”，LoRA 无法凭空拼凑这张脸。它只能在模型已有的特征空间里进行重组与偏置。<strong>这条铁律决定了 LoRA 的上限</strong>。</li>\n</ul>\n<hr>\n<h2>二、LoRA 训练成功的关键：一条铁律 + 四大支柱</h2>\n<h3>铁律</h3>\n<blockquote>\n<p>LoRA 的能力上限,在训练开始前就已被基底模型锁死。它只能唤醒和重组已知概念，无法创造新知识。</p>\n</blockquote>\n<h3>支柱一：基底模型的选择</h3>\n<ul>\n<li><strong>FLUX.2 必须使用专属底模</strong>，SD 1.5 或 SDXL 的 LoRA 不能跨架构使用。</li>\n<li>官方推荐使用 <strong>FLUX.2 [klein]</strong> 版本作为微调基底，效果远好于其他版本。</li>\n</ul>\n<h3>支柱二：数据集质量</h3>\n<ul>\n<li><strong>一致性</strong>：主体五官/特征必须高度锁定。</li>\n<li><strong>多样性</strong>：角度、表情、背景、光照、景别必须多变，否则模型只会输出白底正面大头照。</li>\n<li><strong>纯度</strong>：数据集中只能有你想学的那个角色，拒绝任何“脏”数据。</li>\n<li><strong>质量 &gt; 数量</strong>：10-20 张精选图效果远超 100 张随便找的图。</li>\n</ul>\n<h3>支柱三：打标质量</h3>\n<ul>\n<li>核心原则：<strong>描述你想让模型听到的，排除你不想让它学的。</strong></li>\n<li>人物训练：将 <code>blue eyes</code>、<code>black hair</code> 等固定特征全部写入标签，让模型将特征与你的唯一触发词（如 <code>ohwx</code>）绑定。</li>\n<li>变化的内容（背景、衣服、动作）要详细标记，模型才知道这些是“可以变”的。</li>\n</ul>\n<h3>支柱四：关键超参数（针对 FLUX.2）</h3>\n<ul>\n<li><strong>学习率</strong>：推荐 <code>1e-4</code>，配合 <code>cosine_with_restarts</code> 调度器。</li>\n<li><strong>网络维度（Network Dim）</strong>：人脸建议设为 <strong>32</strong>；8/16 可能丢失细节，64 容易过拟合。</li>\n<li><strong>训练步数</strong>：20 张图约 1500-2000 步，宁少勿多。</li>\n<li><strong>中途验收</strong>：一旦生成的背景、服装开始和训练集僵化雷同，立即停止训练。</li>\n</ul>\n<hr>\n<h2>三、FLUX.2 保证人物一致性的两大最优方法</h2>\n<p>目前在 FLUX.2 上，存在一条“双轨制”最优路径：有硬件且追求极致稳定选 <strong>LoRA 训练</strong>；追求便捷快速选 <strong>多图参考</strong>。</p>\n<h3>方法一：LoRA 人物模型训练（黄金标准）</h3>\n<p><strong>适用场景</strong>：长期、批量生成固定角色（虚拟人、漫画主角等）。\n<strong>优势</strong>：一致性极高，深层还原面部细节和皮肤纹理。\n<strong>硬件</strong>：建议 12GB 以上显存，使用 GGUF 量化模型可在消费级显卡上训练，耗时约 1-3 小时。</p>\n<p><strong>进阶技巧——渐进式训练</strong>\n不要从零开始。先找公开的优质相似 LoRA 作为起点做微调，成功率远高于盲训。</p>\n<h3>方法二：多图参考（Multi-Reference，便捷最优）</h3>\n<p><strong>适用场景</strong>：在线平台用户、快速一次性项目。\n<strong>核心操作</strong>：在提示词中用 <code>@</code> 符号引用上传的参考图。</p>\n<ul>\n<li><code>@image1 wearing the outfit from @image2</code>（角色1穿角色2的衣服）</li>\n<li><code>a portrait of @image1 in the setting of @image3</code>（角色1出现在场景3）</li>\n</ul>\n<p>最多支持同时引用 4-10 张参考图，分别控制长相、服装、场景，即时生成，无需训练。</p>\n<hr>\n<h2>四、常见误区与名词解释</h2>\n<h3>4.1 “抽卡”是什么？</h3>\n<p>不训练 LoRA，靠改随机种子反复生成大量图片，从中碰运气挑出几张像同一个人的。<strong>在追求一致性时，这不可控也不可靠</strong>，只是临时凑合。</p>\n<h3>4.2 FLUX.2 能生成视频吗？</h3>\n<p>FLUX.2 本身只能生成图像，但可以作为视频流程的“首帧生成器”，配合 LTX-2、Seedance 2.0 等视频模型实现“图转视频”。</p>\n<hr>\n<h2>五、总结</h2>\n<ul>\n<li><strong>理解本质</strong>：LoRA 是“输入驱动的信号调制器”，是 FLUX.2 人物一致性的核心技术。</li>\n<li><strong>数据与打标</strong>：决定 LoRA 上限的最关键因素，比超参数更重要。</li>\n<li><strong>双轨选择</strong>：追求最佳品质选 LoRA 训练；追求便捷可先用 FLUX.2 多图参考功能。</li>\n<li><strong>参数克制</strong>：学习率 <code>1e-4</code>、Dim 32、步数宁少勿多，是 FLUX.2 上反复验证的有效配置。</li>\n</ul>\n<p>掌握了这套方法论，你就能在 FLUX.2 上彻底告别“抽卡”的玄学，稳稳地复现你心中那个独一无二的角色。</p>\n"
+  },
+  {
     "id": "hello-world",
     "title": "我的第一篇博客文章",
     "date": "2026-04-30",
@@ -13,11 +26,15 @@
   },
   {
     "id": "another-post",
-    "title": "another-post.md",
-    "date": "",
-    "category": "未分类",
-    "tags": [],
-    "excerpt": "",
-    "content": "<hr>\n<h2>title: 学习 JavaScript 的十个技巧\ndate: 2026-04-25\ncategory: 技术\ntags: [JavaScript, 教程, 前端]\nexcerpt: 分享十个实用的 JavaScript 编程技巧，帮助你写出更简洁优雅的代码。</h2>\n<h2>前言</h2>\n<p>JavaScript 是最流行的编程语言之一。以下是十个实用技巧。</p>\n<h3>1. 解构赋值</h3>\n<pre><code class=\"language-javascript\">const user = { name: &#39;张三&#39;, age: 25 };\nconst { name, age } = user;\nconsole.log(name); // 张三\n</code></pre>\n<h3>2. 模板字符串</h3>\n<pre><code class=\"language-javascript\">const name = &#39;世界&#39;;\nconsole.log(`你好，${name}！`);\n</code></pre>\n<h3>3. 箭头函数</h3>\n<pre><code class=\"language-javascript\">const add = (a, b) =&gt; a + b;\n</code></pre>\n<h3>4. 展开运算符</h3>\n<pre><code class=\"language-javascript\">const arr1 = [1, 2, 3];\nconst arr2 = [...arr1, 4, 5]; // [1, 2, 3, 4, 5]\n</code></pre>\n<h3>5. 可选链</h3>\n<pre><code class=\"language-javascript\">const city = user?.address?.city;\n</code></pre>\n<h3>6. Promise 与 async/await</h3>\n<pre><code class=\"language-javascript\">async function fetchData() {\n  const res = await fetch(&#39;/api/data&#39;);\n  return res.json();\n}\n</code></pre>\n<h3>7. 数组方法</h3>\n<ul>\n<li><code>map()</code> - 转换每个元素</li>\n<li><code>filter()</code> - 过滤元素</li>\n<li><code>reduce()</code> - 累加计算</li>\n</ul>\n<h3>8. 对象简写</h3>\n<pre><code class=\"language-javascript\">const name = &#39;李四&#39;;\nconst user = { name }; // 等同于 { name: name }\n</code></pre>\n<h3>9. 默认参数</h3>\n<pre><code class=\"language-javascript\">function greet(name = &#39;访客&#39;) {\n  return `你好，${name}`;\n}\n</code></pre>\n<h3>10. 空值合并</h3>\n<pre><code class=\"language-javascript\">const value = input ?? &#39;默认值&#39;;\n</code></pre>\n<hr>\n"
+    "title": "学习 JavaScript 的十个技巧",
+    "date": "2026-04-25",
+    "category": "技术",
+    "tags": [
+      "JavaScript",
+      "教程",
+      "前端"
+    ],
+    "excerpt": "分享十个实用的 JavaScript 编程技巧，帮助你写出更简洁优雅的代码。",
+    "content": "<h2>前言</h2>\n<p>JavaScript 是最流行的编程语言之一。以下是十个实用技巧。</p>\n<h3>1. 解构赋值</h3>\n<pre><code class=\"language-javascript\">const user = { name: &#39;张三&#39;, age: 25 };\nconst { name, age } = user;\nconsole.log(name); // 张三\n</code></pre>\n<h3>2. 模板字符串</h3>\n<pre><code class=\"language-javascript\">const name = &#39;世界&#39;;\nconsole.log(`你好，${name}！`);\n</code></pre>\n<h3>3. 箭头函数</h3>\n<pre><code class=\"language-javascript\">const add = (a, b) =&gt; a + b;\n</code></pre>\n<h3>4. 展开运算符</h3>\n<pre><code class=\"language-javascript\">const arr1 = [1, 2, 3];\nconst arr2 = [...arr1, 4, 5]; // [1, 2, 3, 4, 5]\n</code></pre>\n<h3>5. 可选链</h3>\n<pre><code class=\"language-javascript\">const city = user?.address?.city;\n</code></pre>\n<h3>6. Promise 与 async/await</h3>\n<pre><code class=\"language-javascript\">async function fetchData() {\n  const res = await fetch(&#39;/api/data&#39;);\n  return res.json();\n}\n</code></pre>\n<h3>7. 数组方法</h3>\n<ul>\n<li><code>map()</code> - 转换每个元素</li>\n<li><code>filter()</code> - 过滤元素</li>\n<li><code>reduce()</code> - 累加计算</li>\n</ul>\n<h3>8. 对象简写</h3>\n<pre><code class=\"language-javascript\">const name = &#39;李四&#39;;\nconst user = { name }; // 等同于 { name: name }\n</code></pre>\n<h3>9. 默认参数</h3>\n<pre><code class=\"language-javascript\">function greet(name = &#39;访客&#39;) {\n  return `你好，${name}`;\n}\n</code></pre>\n<h3>10. 空值合并</h3>\n<pre><code class=\"language-javascript\">const value = input ?? &#39;默认值&#39;;\n</code></pre>\n<hr>\n"
   }
 ]
